@@ -9,12 +9,15 @@ export default async function handler(req, res) {
     const { grade, targetMajor, userGoals, question } = req.body;
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY 환경변수가 설정되지 않았습니다.' });
+    if (!apiKey || apiKey.trim() === '' || apiKey.includes('your_gemini_api_key_here')) {
+      console.error('API Key Error: GEMINI_API_KEY is not set in environment variables.');
+      return res.status(400).json({ 
+        error: 'Vercel 환경변수에 GEMINI_API_KEY가 설정되지 않았거나 올바르지 않습니다. Vercel Settings > Environment Variables에서 키를 등록 후 Redeploy 해주세요.' 
+      });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
 [사용자 기본 정보]
@@ -35,7 +38,9 @@ ${question || '기본 정보에 맞는 고등학교 활동 및 학업 로드맵 
 
     return res.status(200).json({ answer: responseText });
   } catch (error) {
-    console.error('Gemini API Error:', error);
-    return res.status(500).json({ error: '답변을 생성하는 도중 오류가 발생했습니다.' });
+    console.error('Gemini API Exception Details:', error);
+    return res.status(500).json({ 
+      error: `Gemini API 호출 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}` 
+    });
   }
 }
