@@ -1,0 +1,12 @@
+{
+  "name": "highschool-roadmap-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static HTML App'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0"
+  }
+}
