@@ -3,37 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Q&A Assistant</title>
+  <title>고등학교 로드맵 AI & Q&A</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: Arial, sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 40px auto;
       padding: 0 20px;
-      background-color: #f9f9f9;
+      background-color: #f4f6f8;
+      color: #333;
     }
-    .card {
+    .container {
       background: white;
-      padding: 24px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     h1 {
       margin-top: 0;
-      color: #333;
+      color: #1a1a1a;
+      border-bottom: 2px solid #0070f3;
+      padding-bottom: 10px;
     }
-    textarea {
+    .section {
+      margin-bottom: 24px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+    }
+    input[type="text"], textarea, select {
       width: 100%;
-      height: 120px;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      font-size: 16px;
-      resize: vertical;
+      font-size: 15px;
       margin-bottom: 12px;
+    }
+    textarea {
+      height: 100px;
+      resize: vertical;
     }
     button {
       background-color: #0070f3;
@@ -44,65 +55,91 @@
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
+      width: 100%;
     }
-    button:hover {
-      background-color: #0051a2;
-    }
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    .response-area {
-      margin-top: 24px;
+    button:hover { background-color: #0051a2; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+    
+    .qa-section {
+      margin-top: 30px;
       padding-top: 20px;
-      border-top: 1px solid #eee;
+      border-top: 2px dashed #ddd;
     }
     .response-box {
-      background: #f1f3f5;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
       padding: 16px;
       border-radius: 6px;
       white-space: pre-wrap;
       line-height: 1.6;
-      min-height: 80px;
+      min-height: 100px;
+      margin-top: 12px;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Gemini에게 질문하기</h1>
-    <textarea id="questionInput" placeholder="질문할 내용을 입력해 주세요..."></textarea>
-    <button id="submitBtn" onclick="askQuestion()">질문하기</button>
+  <div class="container">
+    <h1>고등학교 로드맵 AI Assistant</h1>
 
-    <div class="response-area">
-      <h3>답변</h3>
-      <div id="responseBox" class="response-box">질문을 입력하고 버튼을 눌러주세요.</div>
+    <div class="section">
+      <label for="grade">학년 선택</label>
+      <select id="grade">
+        <option value="1학년">1학년</option>
+        <option value="2학년">2학년</option>
+        <option value="3학년">3학년</option>
+      </select>
+
+      <label for="targetMajor">희망 전공 / 관심 분야</label>
+      <input type="text" id="targetMajor" placeholder="예: 컴퓨터공학과, 경영학과, 의예과 등">
+
+      <label for="userGoals">학습 및 활동 목표</label>
+      <textarea id="userGoals" placeholder="목표 내신 등급, 동아리 활동, 탐구 주제 등 원하는 내용을 적어주세요."></textarea>
+    </div>
+
+    <div class="qa-section">
+      <h2>AI에게 추가 질문하기 / 로드맵 생성 요청</h2>
+      <label for="questionInput">질문 또는 요청사항</label>
+      <textarea id="questionInput" placeholder="위 정보를 바탕으로 한 로드맵 문의나, 궁금한 점을 자유롭게 입력해 주세요."></textarea>
+
+      <button id="submitBtn" onclick="askQuestion()">답변 / 로드맵 생성 요청하기</button>
+
+      <h3>답변 결과</h3>
+      <div id="responseBox" class="response-box">질문이나 요청사항을 입력하신 후 버튼을 눌러주세요.</div>
     </div>
   </div>
 
   <script>
     async function askQuestion() {
-      const questionInput = document.getElementById('questionInput');
+      const grade = document.getElementById('grade').value;
+      const targetMajor = document.getElementById('targetMajor').value.trim();
+      const userGoals = document.getElementById('userGoals').value.trim();
+      const question = document.getElementById('questionInput').value.trim();
+
       const responseBox = document.getElementById('responseBox');
       const submitBtn = document.getElementById('submitBtn');
 
-      const question = questionInput.value.trim();
-      if (!question) {
-        alert('질문을 입력해주세요.');
+      if (!question && !targetMajor && !userGoals) {
+        alert('내용을 최소 하나 이상 입력해주세요.');
         return;
       }
 
+      const payload = {
+        grade,
+        targetMajor,
+        userGoals,
+        question
+      };
+
       submitBtn.disabled = true;
-      submitBtn.innerText = '답변 생성 중...';
-      responseBox.innerText = '답변을 생각하는 중입니다...';
+      submitBtn.innerText = '답변 작성 중...';
+      responseBox.innerText = 'Gemini AI가 답변을 작성하고 있습니다...';
 
       try {
         const res = await fetch('/api/generate', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ question }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
 
         const data = await res.json();
@@ -110,14 +147,14 @@
         if (res.ok) {
           responseBox.innerText = data.answer;
         } else {
-          responseBox.innerText = `오류 발생: ${data.error || '답변을 가져오지 못했습니다.'}`;
+          responseBox.innerText = `오류 발생: ${data.error || '답변을 불러오지 못했습니다.'}`;
         }
       } catch (err) {
         console.error(err);
         responseBox.innerText = '서버 통신 중 오류가 발생했습니다.';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = '질문하기';
+        submitBtn.innerText = '답변 / 로드맵 생성 요청하기';
       }
     }
   </script>

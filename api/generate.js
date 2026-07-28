@@ -6,11 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { question } = req.body;
-
-    if (!question) {
-      return res.status(400).json({ error: '질문 내용을 입력해주세요.' });
-    }
+    const { grade, targetMajor, userGoals, question } = req.body;
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -20,7 +16,21 @@ export default async function handler(req, res) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    const result = await model.generateContent(question);
+    const prompt = `
+[사용자 기본 정보]
+- 학년: ${grade || '미지정'}
+- 희망 전공: ${targetMajor || '미지정'}
+- 목표/관심사: ${userGoals || '미지정'}
+
+[사용자 질문 및 요청]
+${question || '기본 정보에 맞는 고등학교 활동 및 학업 로드맵 가이드를 제공해 주세요.'}
+
+[안내사항]
+- 주간/일간 시간표 형태는 작성하지 마세요.
+- 입력된 기본 정보와 질문에 대해 친절하고 구체적으로 답변 및 조언을 제공해 주세요.
+`;
+
+    const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
     return res.status(200).json({ answer: responseText });
