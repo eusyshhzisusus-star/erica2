@@ -21,16 +21,15 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ③ 웹 설정값 (firebaseConfig를 여기에 붙여넣어 주세요)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+     const firebaseConfig = {
+      apiKey: "AIzaSyAvsl3_OsEKy7wNwYziSWrWSqL1UwbS1D0",
+      authDomain: "erica-2b744.firebaseapp.com",
+      projectId: "erica-2b744",
+      storageBucket: "erica-2b744.firebasestorage.app",
+      messagingSenderId: "678676020220",
+      appId: "1:678676020220:web:38380f18a5321701e51079",
+      measurementId: "G-0NZ3DFMHEV"
     };
-
-    // Firebase 및 Firestore 초기화
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
