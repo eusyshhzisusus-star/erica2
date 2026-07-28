@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>고등학교 로드맵 AI & Q&A</title>
+  <!-- 마크다운 표 및 파싱을 위한 marked 라이브러리 추가 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -65,15 +67,43 @@
       padding-top: 20px;
       border-top: 2px dashed #ddd;
     }
+    
+    /* 표 렌더링 스타일 추가 */
     .response-box {
-      background: #f8f9fa;
+      background: #ffffff;
       border: 1px solid #e9ecef;
-      padding: 16px;
-      border-radius: 6px;
-      white-space: pre-wrap;
+      padding: 20px;
+      border-radius: 8px;
       line-height: 1.6;
       min-height: 100px;
       margin-top: 12px;
+      overflow-x: auto;
+    }
+
+    .response-box table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    .response-box th, .response-box td {
+      border: 1px solid #ddd;
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .response-box th {
+      background-color: #0070f3;
+      color: white;
+      font-weight: bold;
+    }
+
+    .response-box tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .response-box ul, .response-box ol {
+      padding-left: 20px;
     }
   </style>
 </head>
@@ -90,6 +120,14 @@
         <option value="3학년">3학년</option>
       </select>
 
+      <label for="academicLevel">학습 / 성적 수준</label>
+      <select id="academicLevel">
+        <option value="상위권 (1~2등급)">상위권 (1~2등급)</option>
+        <option value="중위권 (3~4등급)" selected>중위권 (3~4등급)</option>
+        <option value="하위권 (5등급 이하)">하위권 (5등급 이하)</option>
+        <option value="기초 다지기 필요">기초 다지기 필요</option>
+      </select>
+
       <label for="targetMajor">희망 전공 / 관심 분야</label>
       <input type="text" id="targetMajor" placeholder="예: 컴퓨터공학과, 경영학과, 의예과 등">
 
@@ -100,7 +138,7 @@
     <div class="qa-section">
       <h2>AI에게 추가 질문하기 / 로드맵 생성 요청</h2>
       <label for="questionInput">질문 또는 요청사항</label>
-      <textarea id="questionInput" placeholder="위 정보를 바탕으로 한 로드맵 문의나, 궁금한 점을 자유롭게 입력해 주세요."></textarea>
+      <textarea id="questionInput" placeholder="성적대별 추천 공부법, 학업 로드맵, 희망 전공 관련 질문 등을 입력해 주세요."></textarea>
 
       <button id="submitBtn" onclick="askQuestion()">답변 / 로드맵 생성 요청하기</button>
 
@@ -112,6 +150,7 @@
   <script>
     async function askQuestion() {
       const grade = document.getElementById('grade').value;
+      const academicLevel = document.getElementById('academicLevel').value;
       const targetMajor = document.getElementById('targetMajor').value.trim();
       const userGoals = document.getElementById('userGoals').value.trim();
       const question = document.getElementById('questionInput').value.trim();
@@ -126,6 +165,7 @@
 
       const payload = {
         grade,
+        academicLevel,
         targetMajor,
         userGoals,
         question
@@ -133,7 +173,7 @@
 
       submitBtn.disabled = true;
       submitBtn.innerText = '답변 작성 중...';
-      responseBox.innerText = 'Gemini AI가 답변을 작성하고 있습니다...';
+      responseBox.innerText = 'Gemini AI가 답변을 표 형식으로 작성하고 있습니다...';
 
       try {
         const res = await fetch('/api/generate', {
@@ -145,7 +185,8 @@
         const data = await res.json();
 
         if (res.ok) {
-          responseBox.innerText = data.answer;
+          // 마크다운 문법(표 포함)을 HTML로 변환하여 출력
+          responseBox.innerHTML = marked.parse(data.answer);
         } else {
           responseBox.innerText = `오류 발생: ${data.error || '답변을 불러오지 못했습니다.'}`;
         }
